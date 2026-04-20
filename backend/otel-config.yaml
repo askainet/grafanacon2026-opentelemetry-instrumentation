@@ -1,0 +1,34 @@
+# backend/otel-config.yaml
+file_format: "1.0"
+
+resource:
+  attributes:
+    - name: service.name
+      value: ${OTEL_SERVICE_NAME:-tapas-backend}
+
+tracer_provider:
+  processors:
+    - batch:
+        exporter:
+          otlp_http:
+            endpoint: ${OTEL_EXPORTER_OTLP_ENDPOINT:-http://otel-collector:4318}/v1/traces
+
+meter_provider:
+  readers:
+    - periodic:
+        interval: 5000
+        exporter:
+          otlp_http:
+            endpoint: ${OTEL_EXPORTER_OTLP_ENDPOINT:-http://otel-collector:4318}/v1/metrics
+
+logger_provider:
+  processors:
+    - batch:
+        exporter:
+          otlp_http:
+            endpoint: ${OTEL_EXPORTER_OTLP_ENDPOINT:-http://otel-collector:4318}/v1/logs
+
+propagator:
+  composite:
+    - tracecontext:
+    - baggage:
